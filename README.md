@@ -16,6 +16,9 @@ A web-based application for screening academic articles for bibliometric studies
 - **📊 Results Filtering** - Filter by accepted/rejected
 - **📥 Excel Export** - Download processed results
 
+<img width="1385" height="726" alt="Screenshot 2026-01-17 at 23 37 54" src="https://github.com/user-attachments/assets/b0a32844-6e7c-48ba-b7bd-2b2046b6ba4f" />
+
+
 ## 🚀 Quick Start
 
 ### Installation
