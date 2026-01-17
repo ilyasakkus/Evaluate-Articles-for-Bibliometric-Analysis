@@ -1,6 +1,7 @@
 """
 Article Screening Web Application
 A Streamlit-based UI for screening academic articles for bibliometric research.
+Supports English and Turkish languages.
 """
 
 import io
@@ -13,13 +14,185 @@ import streamlit as st
 
 # Page configuration
 st.set_page_config(
-    page_title="Makale Tarama Uygulaması",
+    page_title="Article Screening Tool",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
+# Translations
+TRANSLATIONS = {
+    "en": {
+        "app_title": "📚 Article Screening Tool",
+        "app_subtitle": "Academic article evaluation tool for bibliometric studies",
+        "settings": "⚙️ Settings",
+        "language": "Language",
+        "analysis_mode": "Analysis Mode",
+        "mode_rules": "🔍 Rule-Based",
+        "mode_gemini": "🤖 Gemini AI",
+        "mode_deepseek": "🧠 DeepSeek AI",
+        "mode_help": "Rule-based: Keyword matching\nGemini/DeepSeek: AI-powered analysis",
+        "api_key": "API Key",
+        "api_key_required": "⚠️ API key required",
+        "column_mapping": "📋 Column Mapping",
+        "column_mapping_desc": "Select column names from your Excel file",
+        "title_column": "Title Column",
+        "abstract_column": "Abstract Column",
+        "tab_upload": "📁 Upload File",
+        "tab_criteria": "⚙️ Criteria",
+        "tab_analysis": "📊 Analysis",
+        "upload_title": "Upload Excel File",
+        "upload_desc": "Drag and drop your Excel file or click to select",
+        "upload_help": "Excel file exported from WoS or Scopus",
+        "articles_loaded": "articles loaded!",
+        "total_articles": "Total Articles",
+        "columns": "Columns",
+        "evaluated": "Evaluated",
+        "data_preview": "📋 Data Preview",
+        "file_error": "❌ Error loading file:",
+        "criteria_title": "Evaluation Criteria",
+        "criteria_desc": "Enter keywords separated by commas (for rule-based mode)",
+        "ai_tech": "🤖 AI Technology",
+        "ai_keywords": "AI keywords",
+        "ai_help": "Article must contain at least one of these",
+        "web_env": "🌐 Web/Online Environment",
+        "web_keywords": "Web environment keywords",
+        "human_factor": "👥 Human Factor",
+        "human_keywords": "Human factor keywords",
+        "criteria_summary": "📝 Summary",
+        "criteria_info": """**An article is accepted if:**
+1. ✅ Mentions AI technology
+2. ✅ Mentions web/online environment
+3. ✅ Involves human users
+
+All criteria must be met!""",
+        "analysis_title": "Analysis and Results",
+        "upload_first": "⚠️ Please upload an Excel file first",
+        "reprocess_all": "Reprocess all articles",
+        "reprocess_help": "If checked, previously evaluated articles will be reprocessed",
+        "limit": "Limit (0 = all)",
+        "limit_help": "Process limited number of articles for testing",
+        "selected_mode": "📌 Selected mode:",
+        "start_analysis": "🚀 Start Analysis",
+        "api_key_error": "❌ API key required! Please enter in sidebar.",
+        "gemini_connected": "✅ Gemini AI connected",
+        "deepseek_connected": "✅ DeepSeek AI connected",
+        "connection_error": "❌ Connection error:",
+        "all_evaluated": "✅ All articles already evaluated!",
+        "processing_log": "📋 Processing Log",
+        "processing": "Processing:",
+        "analysis_complete": "🎉 Analysis complete!",
+        "accepted": "accepted",
+        "rejected": "rejected",
+        "total_processed": "Total Processed",
+        "accept": "✅ Accept",
+        "reject": "❌ Reject",
+        "acceptance_rate": "Acceptance Rate",
+        "results_preview": "📋 Results Preview",
+        "filter": "Filter",
+        "filter_all": "All",
+        "filter_accepted": "✅ Accepted",
+        "filter_rejected": "❌ Rejected",
+        "download_title": "📥 Download Results",
+        "download_button": "📥 Download as Excel",
+        "ai_not_found": "AI technology not found",
+        "web_not_found": "Web/online environment not found",
+        "human_not_found": "Human factor not found",
+        "criteria_not_met": "Criteria not met",
+        "api_error": "API Error:",
+        "rate_limit": "⏳ Rate limit - waiting",
+        "seconds": "s",
+        "attempt": "Attempt",
+        "quota_exceeded": "API quota exceeded - use DeepSeek or wait 24 hours",
+        "max_retries": "Maximum retry count reached",
+    },
+    "tr": {
+        "app_title": "📚 Makale Tarama Uygulaması",
+        "app_subtitle": "Bibliyometrik çalışmalar için akademik makale değerlendirme aracı",
+        "settings": "⚙️ Ayarlar",
+        "language": "Dil",
+        "analysis_mode": "Analiz Modu",
+        "mode_rules": "🔍 Kural Tabanlı",
+        "mode_gemini": "🤖 Gemini AI",
+        "mode_deepseek": "🧠 DeepSeek AI",
+        "mode_help": "Kural tabanlı: Anahtar kelime eşleştirmesi\nGemini/DeepSeek: Yapay zeka ile akıllı analiz",
+        "api_key": "API Anahtarı",
+        "api_key_required": "⚠️ API anahtarı gerekli",
+        "column_mapping": "📋 Sütun Eşleştirme",
+        "column_mapping_desc": "Excel dosyanızdaki sütun isimlerini seçin",
+        "title_column": "Başlık Sütunu",
+        "abstract_column": "Özet Sütunu",
+        "tab_upload": "📁 Dosya Yükle",
+        "tab_criteria": "⚙️ Kriterler",
+        "tab_analysis": "📊 Analiz",
+        "upload_title": "Excel Dosyası Yükle",
+        "upload_desc": "Excel dosyanızı sürükleyip bırakın veya seçin",
+        "upload_help": "WoS veya Scopus'tan dışa aktarılmış Excel dosyası",
+        "articles_loaded": "makale yüklendi!",
+        "total_articles": "Toplam Makale",
+        "columns": "Sütun Sayısı",
+        "evaluated": "Değerlendirilmiş",
+        "data_preview": "📋 Veri Önizleme",
+        "file_error": "❌ Dosya yüklenirken hata:",
+        "criteria_title": "Değerlendirme Kriterleri",
+        "criteria_desc": "Her bir kriter için anahtar kelimeleri virgülle ayırarak girin (Kural tabanlı mod için)",
+        "ai_tech": "🤖 AI Teknolojisi",
+        "ai_keywords": "AI anahtar kelimeleri",
+        "ai_help": "Makale bunlardan en az birini içermeli",
+        "web_env": "🌐 Web/Online Ortam",
+        "web_keywords": "Web ortam anahtar kelimeleri",
+        "human_factor": "👥 İnsan Faktörü",
+        "human_keywords": "İnsan faktörü anahtar kelimeleri",
+        "criteria_summary": "📝 Özet",
+        "criteria_info": """**Bir makale kabul edilir eğer:**
+1. ✅ AI teknolojisinden bahsediyorsa
+2. ✅ Web/online ortamdan bahsediyorsa
+3. ✅ İnsan kullanıcıları içeriyorsa
+
+Tüm kriterler sağlanmalıdır!""",
+        "analysis_title": "Analiz ve Sonuçlar",
+        "upload_first": "⚠️ Lütfen önce bir Excel dosyası yükleyin",
+        "reprocess_all": "Tüm makaleleri yeniden değerlendir",
+        "reprocess_help": "İşaretlenirse daha önce değerlendirilmiş makaleler de yeniden işlenir",
+        "limit": "Limit (0 = tümü)",
+        "limit_help": "Test için sınırlı sayıda makale işleyin",
+        "selected_mode": "📌 Seçili mod:",
+        "start_analysis": "🚀 Analizi Başlat",
+        "api_key_error": "❌ API anahtarı gerekli! Lütfen sidebar'dan girin.",
+        "gemini_connected": "✅ Gemini AI bağlantısı kuruldu",
+        "deepseek_connected": "✅ DeepSeek AI bağlantısı kuruldu",
+        "connection_error": "❌ Bağlantı hatası:",
+        "all_evaluated": "✅ Tüm makaleler zaten değerlendirilmiş!",
+        "processing_log": "📋 İşlem Logu",
+        "processing": "İşleniyor:",
+        "analysis_complete": "🎉 Analiz tamamlandı!",
+        "accepted": "kabul",
+        "rejected": "red",
+        "total_processed": "Toplam İşlenen",
+        "accept": "✅ Kabul",
+        "reject": "❌ Red",
+        "acceptance_rate": "Kabul Oranı",
+        "results_preview": "📋 Sonuç Önizleme",
+        "filter": "Filtre",
+        "filter_all": "Tümü",
+        "filter_accepted": "✅ Kabul Edilenler",
+        "filter_rejected": "❌ Red Edilenler",
+        "download_title": "📥 Sonuçları İndir",
+        "download_button": "📥 Excel Olarak İndir",
+        "ai_not_found": "AI teknolojisi bulunamadı",
+        "web_not_found": "Web/online ortam bulunamadı",
+        "human_not_found": "İnsan faktörü bulunamadı",
+        "criteria_not_met": "Kriterler sağlanmadı",
+        "api_error": "API Hatası:",
+        "rate_limit": "⏳ Rate limit - bekleniyor",
+        "seconds": "s",
+        "attempt": "Deneme",
+        "quota_exceeded": "API kota limiti aşıldı - DeepSeek kullanın veya 24 saat bekleyin",
+        "max_retries": "Maksimum deneme sayısına ulaşıldı",
+    }
+}
+
+# Custom CSS
 st.markdown("""
 <style>
     .main-header {
@@ -60,6 +233,12 @@ undergraduate, graduate, postgraduate, university student, college student,
 high school student, k-12, higher education"""
 
 
+def get_text(key: str) -> str:
+    """Get translated text for current language."""
+    lang = st.session_state.get('language', 'en')
+    return TRANSLATIONS.get(lang, TRANSLATIONS['en']).get(key, key)
+
+
 def parse_keywords(text: str) -> list:
     """Parse comma-separated keywords into regex patterns."""
     keywords = [k.strip().lower() for k in text.split(',') if k.strip()]
@@ -92,11 +271,11 @@ def screen_article_rules(title: str, abstract: str, ai_patterns: list,
     
     missing = []
     if not has_ai:
-        missing.append("AI teknolojisi bulunamadı")
+        missing.append(get_text("ai_not_found"))
     if not has_web:
-        missing.append("Web/online ortam bulunamadı")
+        missing.append(get_text("web_not_found"))
     if not has_human:
-        missing.append("İnsan faktörü bulunamadı")
+        missing.append(get_text("human_not_found"))
     
     if not missing:
         return True, ""
@@ -104,9 +283,10 @@ def screen_article_rules(title: str, abstract: str, ai_patterns: list,
         return False, "; ".join(missing)
 
 
-def screen_article_gemini(title: str, abstract: str, client, max_retries: int = 3) -> tuple[bool, str]:
+def screen_article_gemini(title: str, abstract: str, client, lang: str, max_retries: int = 3) -> tuple[bool, str]:
     """Screen an article using Gemini AI with retry logic."""
-    prompt = f"""Sen bir bibliyometrik araştırma asistanısın. Aşağıdaki akademik makaleyi değerlendir.
+    if lang == "tr":
+        prompt = f"""Sen bir bibliyometrik araştırma asistanısın. Aşağıdaki akademik makaleyi değerlendir.
 
 BAŞLIK: {title}
 
@@ -122,6 +302,27 @@ KARAR:
 - Eğer herhangi biri eksikse şunu yaz: RED: [hangi kriter eksik açıkla]
 
 Tek satır yanıt ver:"""
+        accept_keyword = "KABUL"
+        reject_keyword = "RED"
+    else:
+        prompt = f"""You are a bibliometric research assistant. Evaluate the following academic article.
+
+TITLE: {title}
+
+ABSTRACT: {abstract}
+
+CRITERIA (All must be met):
+1. AI Technology: Article must mention ChatGPT, GPT, LLM, AI, chatbot, etc.
+2. Web/Online Environment: Article must mention online education, e-learning, MOOC, etc.
+3. Human Factor: Article must involve teachers, students, educators, etc.
+
+DECISION:
+- If all 3 criteria are met, write ONLY: ACCEPT
+- If any criterion is missing, write: REJECT: [explain which criterion is missing]
+
+Reply in one line:"""
+        accept_keyword = "ACCEPT"
+        reject_keyword = "REJECT"
     
     for attempt in range(max_retries):
         try:
@@ -130,40 +331,39 @@ Tek satır yanıt ver:"""
                 contents=prompt
             )
             result = response.text.strip()
-            
-            # Parse response
             result_upper = result.upper()
-            if "KABUL" in result_upper and "RED" not in result_upper:
+            
+            if accept_keyword in result_upper and reject_keyword not in result_upper:
                 return True, ""
             else:
-                # Extract reason
                 reason = result
-                if "RED:" in result.upper():
-                    idx = result.upper().find("RED:")
-                    reason = result[idx+4:].strip()
-                elif "RED" in result.upper():
-                    idx = result.upper().find("RED")
-                    reason = result[idx+3:].strip()
-                return False, reason if reason else "Kriterler sağlanmadı"
+                if f"{reject_keyword}:" in result.upper():
+                    idx = result.upper().find(f"{reject_keyword}:")
+                    reason = result[idx+len(reject_keyword)+1:].strip()
+                elif reject_keyword in result.upper():
+                    idx = result.upper().find(reject_keyword)
+                    reason = result[idx+len(reject_keyword):].strip()
+                return False, reason if reason else get_text("criteria_not_met")
                 
         except Exception as e:
             error_str = str(e)
             if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
-                wait_time = (attempt + 1) * 30  # 30, 60, 90 seconds
+                wait_time = (attempt + 1) * 30
                 if attempt < max_retries - 1:
-                    st.warning(f"⏳ Rate limit - {wait_time}s bekleniyor... (Deneme {attempt+1}/{max_retries})")
+                    st.warning(f"{get_text('rate_limit')} {wait_time}{get_text('seconds')}... ({get_text('attempt')} {attempt+1}/{max_retries})")
                     time.sleep(wait_time)
                     continue
                 else:
-                    return False, "API kota limiti aşıldı - DeepSeek kullanın veya 24 saat bekleyin"
-            return False, f"Gemini API Hatası: {error_str[:100]}"
+                    return False, get_text("quota_exceeded")
+            return False, f"{get_text('api_error')} {error_str[:100]}"
     
-    return False, "Maksimum deneme sayısına ulaşıldı"
+    return False, get_text("max_retries")
 
 
-def screen_article_deepseek(title: str, abstract: str, client) -> tuple[bool, str]:
+def screen_article_deepseek(title: str, abstract: str, client, lang: str) -> tuple[bool, str]:
     """Screen an article using DeepSeek AI."""
-    prompt = f"""Sen bir bibliyometrik araştırma asistanısın. Aşağıdaki akademik makaleyi değerlendir.
+    if lang == "tr":
+        prompt = f"""Sen bir bibliyometrik araştırma asistanısın. Aşağıdaki akademik makaleyi değerlendir.
 
 BAŞLIK: {title}
 
@@ -179,92 +379,125 @@ KARAR:
 - Eğer herhangi biri eksikse şunu yaz: RED: [hangi kriter eksik açıkla]
 
 Tek satır yanıt ver:"""
+        accept_keyword = "KABUL"
+        reject_keyword = "RED"
+        system_msg = "Sen bir akademik makale değerlendirme asistanısın. Kısa ve net yanıtlar ver."
+    else:
+        prompt = f"""You are a bibliometric research assistant. Evaluate the following academic article.
+
+TITLE: {title}
+
+ABSTRACT: {abstract}
+
+CRITERIA (All must be met):
+1. AI Technology: Article must mention ChatGPT, GPT, LLM, AI, chatbot, etc.
+2. Web/Online Environment: Article must mention online education, e-learning, MOOC, etc.
+3. Human Factor: Article must involve teachers, students, educators, etc.
+
+DECISION:
+- If all 3 criteria are met, write ONLY: ACCEPT
+- If any criterion is missing, write: REJECT: [explain which criterion is missing]
+
+Reply in one line:"""
+        accept_keyword = "ACCEPT"
+        reject_keyword = "REJECT"
+        system_msg = "You are an academic article evaluation assistant. Provide short and clear responses."
     
     try:
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[
-                {"role": "system", "content": "Sen bir akademik makale değerlendirme asistanısın. Kısa ve net yanıtlar ver."},
+                {"role": "system", "content": system_msg},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=200
         )
         result = response.choices[0].message.content.strip()
-        
-        # Parse response
         result_upper = result.upper()
-        if "KABUL" in result_upper and "RED" not in result_upper:
+        
+        if accept_keyword in result_upper and reject_keyword not in result_upper:
             return True, ""
         else:
-            # Extract reason
             reason = result
-            if "RED:" in result.upper():
-                idx = result.upper().find("RED:")
-                reason = result[idx+4:].strip()
-            elif "RED" in result.upper():
-                idx = result.upper().find("RED")
-                reason = result[idx+3:].strip()
-            return False, reason if reason else "Kriterler sağlanmadı"
+            if f"{reject_keyword}:" in result.upper():
+                idx = result.upper().find(f"{reject_keyword}:")
+                reason = result[idx+len(reject_keyword)+1:].strip()
+            elif reject_keyword in result.upper():
+                idx = result.upper().find(reject_keyword)
+                reason = result[idx+len(reject_keyword):].strip()
+            return False, reason if reason else get_text("criteria_not_met")
             
     except Exception as e:
-        return False, f"DeepSeek API Hatası: {str(e)}"
+        return False, f"{get_text('api_error')} {str(e)}"
 
 
 def main():
-    # Header
-    st.markdown('<p class="main-header">📚 Makale Tarama Uygulaması</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">Bibliyometrik çalışmalar için akademik makale değerlendirme aracı</p>', unsafe_allow_html=True)
-    
-    # Sidebar
+    # Language selector in sidebar (first item)
     with st.sidebar:
-        st.header("⚙️ Ayarlar")
+        lang = st.selectbox(
+            "🌐 Language / Dil",
+            ["English", "Türkçe"],
+            index=0
+        )
+        st.session_state['language'] = 'en' if lang == "English" else 'tr'
+        
+        st.divider()
+    
+    # Header
+    st.markdown(f'<p class="main-header">{get_text("app_title")}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="sub-header">{get_text("app_subtitle")}</p>', unsafe_allow_html=True)
+    
+    # Sidebar settings
+    with st.sidebar:
+        st.header(get_text("settings"))
         
         # Analysis mode
+        mode_options = [get_text("mode_rules"), get_text("mode_gemini"), get_text("mode_deepseek")]
         analysis_mode = st.radio(
-            "Analiz Modu",
-            ["🔍 Kural Tabanlı", "🤖 Gemini AI", "🧠 DeepSeek AI"],
-            help="Kural tabanlı: Anahtar kelime eşleştirmesi\nGemini/DeepSeek: Yapay zeka ile akıllı analiz"
+            get_text("analysis_mode"),
+            mode_options,
+            help=get_text("mode_help")
         )
         st.session_state['analysis_mode'] = analysis_mode
         
         # API Key input based on mode
-        if "Gemini AI" in analysis_mode:
+        if get_text("mode_gemini") in analysis_mode:
             api_key = st.text_input(
-                "Gemini API Anahtarı",
+                f"Gemini {get_text('api_key')}",
                 type="password",
-                help="Google AI Studio'dan alabilirsiniz: https://aistudio.google.com/apikey"
+                help="https://aistudio.google.com/apikey"
             )
             st.session_state['api_key'] = api_key
             if not api_key:
-                st.warning("⚠️ API anahtarı gerekli")
+                st.warning(get_text("api_key_required"))
         
-        elif "DeepSeek AI" in analysis_mode:
+        elif get_text("mode_deepseek") in analysis_mode:
             api_key = st.text_input(
-                "DeepSeek API Anahtarı",
+                f"DeepSeek {get_text('api_key')}",
                 type="password",
-                help="DeepSeek platformundan alabilirsiniz: https://platform.deepseek.com"
+                help="https://platform.deepseek.com"
             )
             st.session_state['api_key'] = api_key
             if not api_key:
-                st.warning("⚠️ API anahtarı gerekli")
+                st.warning(get_text("api_key_required"))
         
         st.divider()
         
         # Column mapping
-        st.subheader("📋 Sütun Eşleştirme")
-        st.caption("Excel dosyanızdaki sütun isimlerini seçin")
+        st.subheader(get_text("column_mapping"))
+        st.caption(get_text("column_mapping_desc"))
     
-    # Main content
-    tab1, tab2, tab3 = st.tabs(["📁 Dosya Yükle", "⚙️ Kriterler", "📊 Analiz"])
+    # Main content tabs
+    tab1, tab2, tab3 = st.tabs([get_text("tab_upload"), get_text("tab_criteria"), get_text("tab_analysis")])
     
     # Tab 1: File Upload
     with tab1:
-        st.subheader("Excel Dosyası Yükle")
+        st.subheader(get_text("upload_title"))
         
         uploaded_file = st.file_uploader(
-            "Excel dosyanızı sürükleyip bırakın veya seçin",
+            get_text("upload_desc"),
             type=['xlsx', 'xls'],
-            help="WoS veya Scopus'tan dışa aktarılmış Excel dosyası"
+            help=get_text("upload_help")
         )
         
         if uploaded_file:
@@ -278,13 +511,13 @@ def main():
                     columns = df.columns.tolist()
                     
                     title_col = st.selectbox(
-                        "Başlık Sütunu",
+                        get_text("title_column"),
                         columns,
                         index=columns.index('Title') if 'Title' in columns else 0
                     )
                     
                     abstract_col = st.selectbox(
-                        "Özet Sütunu",
+                        get_text("abstract_column"),
                         columns,
                         index=columns.index('Abstract Note') if 'Abstract Note' in columns else (
                             columns.index('Abstract') if 'Abstract' in columns else 1
@@ -295,67 +528,60 @@ def main():
                     st.session_state['abstract_col'] = abstract_col
                 
                 # Preview
-                st.success(f"✅ {len(df)} makale yüklendi!")
+                st.success(f"✅ {len(df)} {get_text('articles_loaded')}")
                 
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Toplam Makale", len(df))
+                    st.metric(get_text("total_articles"), len(df))
                 with col2:
-                    st.metric("Sütun Sayısı", len(df.columns))
+                    st.metric(get_text("columns"), len(df.columns))
                 with col3:
                     if 'Acceptance' in df.columns or 'Acceptance ' in df.columns:
                         acc_col = 'Acceptance ' if 'Acceptance ' in df.columns else 'Acceptance'
                         evaluated = df[acc_col].notna().sum()
-                        st.metric("Değerlendirilmiş", evaluated)
+                        st.metric(get_text("evaluated"), evaluated)
                 
-                st.subheader("📋 Veri Önizleme")
+                st.subheader(get_text("data_preview"))
                 st.dataframe(df.head(10), use_container_width=True)
                 
             except Exception as e:
-                st.error(f"❌ Dosya yüklenirken hata: {e}")
+                st.error(f"{get_text('file_error')} {e}")
     
     # Tab 2: Criteria Configuration
     with tab2:
-        st.subheader("Değerlendirme Kriterleri")
-        st.caption("Her bir kriter için anahtar kelimeleri virgülle ayırarak girin (Kural tabanlı mod için)")
+        st.subheader(get_text("criteria_title"))
+        st.caption(get_text("criteria_desc"))
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("### 🤖 AI Teknolojisi")
+            st.markdown(f"### {get_text('ai_tech')}")
             ai_keywords = st.text_area(
-                "AI anahtar kelimeleri",
+                get_text("ai_keywords"),
                 value=DEFAULT_AI_KEYWORDS,
                 height=150,
-                help="Makale bunlardan en az birini içermeli"
+                help=get_text("ai_help")
             )
             
-            st.markdown("### 🌐 Web/Online Ortam")
+            st.markdown(f"### {get_text('web_env')}")
             web_keywords = st.text_area(
-                "Web ortam anahtar kelimeleri",
+                get_text("web_keywords"),
                 value=DEFAULT_WEB_KEYWORDS,
                 height=150,
-                help="Makale bunlardan en az birini içermeli"
+                help=get_text("ai_help")
             )
         
         with col2:
-            st.markdown("### 👥 İnsan Faktörü")
+            st.markdown(f"### {get_text('human_factor')}")
             human_keywords = st.text_area(
-                "İnsan faktörü anahtar kelimeleri",
+                get_text("human_keywords"),
                 value=DEFAULT_HUMAN_KEYWORDS,
                 height=150,
-                help="Makale bunlardan en az birini içermeli"
+                help=get_text("ai_help")
             )
             
-            st.markdown("### 📝 Özet")
-            st.info("""
-            **Bir makale kabul edilir eğer:**
-            1. ✅ AI teknolojisinden bahsediyorsa
-            2. ✅ Web/online ortamdan bahsediyorsa
-            3. ✅ İnsan kullanıcıları içeriyorsa
-            
-            Tüm kriterler sağlanmalıdır!
-            """)
+            st.markdown(f"### {get_text('criteria_summary')}")
+            st.info(get_text("criteria_info"))
         
         # Store in session
         st.session_state['ai_keywords'] = ai_keywords
@@ -364,10 +590,10 @@ def main():
     
     # Tab 3: Analysis
     with tab3:
-        st.subheader("Analiz ve Sonuçlar")
+        st.subheader(get_text("analysis_title"))
         
         if 'df' not in st.session_state:
-            st.warning("⚠️ Lütfen önce bir Excel dosyası yükleyin")
+            st.warning(get_text("upload_first"))
             return
         
         df = st.session_state['df']
@@ -378,32 +604,33 @@ def main():
         col1, col2 = st.columns([2, 1])
         with col1:
             force_reprocess = st.checkbox(
-                "Tüm makaleleri yeniden değerlendir",
-                help="İşaretlenirse daha önce değerlendirilmiş makaleler de yeniden işlenir"
+                get_text("reprocess_all"),
+                help=get_text("reprocess_help")
             )
         with col2:
             limit = st.number_input(
-                "Limit (0 = tümü)",
+                get_text("limit"),
                 min_value=0,
                 max_value=len(df),
                 value=0,
-                help="Test için sınırlı sayıda makale işleyin"
+                help=get_text("limit_help")
             )
         
         # Get current mode
-        current_mode = st.session_state.get('analysis_mode', '🔍 Kural Tabanlı')
+        current_mode = st.session_state.get('analysis_mode', get_text("mode_rules"))
         current_api_key = st.session_state.get('api_key', None)
+        current_lang = st.session_state.get('language', 'en')
         
         # Show current mode
-        st.info(f"📌 Seçili mod: **{current_mode}**")
+        st.info(f"{get_text('selected_mode')} **{current_mode}**")
         
         # Start analysis button
-        if st.button("🚀 Analizi Başlat", type="primary", use_container_width=True):
+        if st.button(get_text("start_analysis"), type="primary", use_container_width=True):
             
             # Validate API key for AI modes
-            if "Gemini AI" in current_mode or "DeepSeek AI" in current_mode:
+            if get_text("mode_gemini") in current_mode or get_text("mode_deepseek") in current_mode:
                 if not current_api_key:
-                    st.error("❌ API anahtarı gerekli! Lütfen sidebar'dan girin.")
+                    st.error(get_text("api_key_error"))
                     return
             
             # Parse keywords for rule-based
@@ -415,29 +642,28 @@ def main():
             gemini_client = None
             deepseek_client = None
             
-            if "Gemini AI" in current_mode:
+            if get_text("mode_gemini") in current_mode:
                 try:
                     from google import genai
                     gemini_client = genai.Client(api_key=current_api_key)
-                    st.success("✅ Gemini AI bağlantısı kuruldu")
+                    st.success(get_text("gemini_connected"))
                 except Exception as e:
-                    st.error(f"❌ Gemini bağlantı hatası: {e}")
+                    st.error(f"{get_text('connection_error')} {e}")
                     return
             
-            elif "DeepSeek AI" in current_mode:
+            elif get_text("mode_deepseek") in current_mode:
                 try:
                     import httpx
                     from openai import OpenAI
-                    # Create httpx client without proxy to avoid compatibility issues
                     http_client = httpx.Client(timeout=60.0)
                     deepseek_client = OpenAI(
                         api_key=current_api_key,
                         base_url="https://api.deepseek.com",
                         http_client=http_client
                     )
-                    st.success("✅ DeepSeek AI bağlantısı kuruldu")
+                    st.success(get_text("deepseek_connected"))
                 except Exception as e:
-                    st.error(f"❌ DeepSeek bağlantı hatası: {e}")
+                    st.error(f"{get_text('connection_error')} {e}")
                     return
             
             # Determine columns
@@ -461,13 +687,13 @@ def main():
                 rows_to_process = rows_to_process[:limit]
             
             if len(rows_to_process) == 0:
-                st.info("✅ Tüm makaleler zaten değerlendirilmiş!")
+                st.info(get_text("all_evaluated"))
                 return
             
             # Progress
             progress_bar = st.progress(0)
             status_text = st.empty()
-            log_container = st.expander("📋 İşlem Logu", expanded=True)
+            log_container = st.expander(get_text("processing_log"), expanded=True)
             
             accepted = 0
             rejected = 0
@@ -481,12 +707,12 @@ def main():
                     short_title = title[:50] + "..." if len(title) > 50 else title
                     
                     # Screen based on mode
-                    if "Gemini AI" in current_mode and gemini_client:
-                        acceptance, reason = screen_article_gemini(title, abstract, gemini_client)
-                        time.sleep(0.5)  # Rate limiting
-                    elif "DeepSeek AI" in current_mode and deepseek_client:
-                        acceptance, reason = screen_article_deepseek(title, abstract, deepseek_client)
-                        time.sleep(0.3)  # Rate limiting
+                    if get_text("mode_gemini") in current_mode and gemini_client:
+                        acceptance, reason = screen_article_gemini(title, abstract, gemini_client, current_lang)
+                        time.sleep(0.5)
+                    elif get_text("mode_deepseek") in current_mode and deepseek_client:
+                        acceptance, reason = screen_article_deepseek(title, abstract, deepseek_client, current_lang)
+                        time.sleep(0.3)
                     else:
                         acceptance, reason = screen_article_rules(title, abstract, ai_patterns, web_patterns, human_patterns)
                     
@@ -504,14 +730,14 @@ def main():
                     # Update progress
                     progress = (i + 1) / len(rows_to_process)
                     progress_bar.progress(progress)
-                    status_text.text(f"İşleniyor: {i + 1}/{len(rows_to_process)} | ✅ {accepted} | ❌ {rejected}")
+                    status_text.text(f"{get_text('processing')} {i + 1}/{len(rows_to_process)} | ✅ {accepted} | ❌ {rejected}")
             
             st.session_state['df'] = df
             st.session_state['analysis_complete'] = True
             st.session_state['accepted'] = accepted
             st.session_state['rejected'] = rejected
             
-            st.success(f"🎉 Analiz tamamlandı! ✅ {accepted} kabul | ❌ {rejected} red")
+            st.success(f"{get_text('analysis_complete')} ✅ {accepted} {get_text('accepted')} | ❌ {rejected} {get_text('rejected')}")
         
         # Show results if analysis is complete
         if st.session_state.get('analysis_complete', False):
@@ -524,30 +750,30 @@ def main():
             # Stats
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                st.metric("Toplam İşlenen", total)
+                st.metric(get_text("total_processed"), total)
             with col2:
-                st.metric("✅ Kabul", accepted)
+                st.metric(get_text("accept"), accepted)
             with col3:
-                st.metric("❌ Red", rejected)
+                st.metric(get_text("reject"), rejected)
             with col4:
                 rate = (accepted / total * 100) if total > 0 else 0
-                st.metric("Kabul Oranı", f"{rate:.1f}%")
+                st.metric(get_text("acceptance_rate"), f"{rate:.1f}%")
             
             # Results preview
             df = st.session_state['df']
             acc_col = 'Acceptance ' if 'Acceptance ' in df.columns else 'Acceptance'
             
-            st.subheader("📋 Sonuç Önizleme")
+            st.subheader(get_text("results_preview"))
             
             filter_option = st.radio(
-                "Filtre",
-                ["Tümü", "✅ Kabul Edilenler", "❌ Red Edilenler"],
+                get_text("filter"),
+                [get_text("filter_all"), get_text("filter_accepted"), get_text("filter_rejected")],
                 horizontal=True
             )
             
-            if filter_option == "✅ Kabul Edilenler":
+            if filter_option == get_text("filter_accepted"):
                 display_df = df[df[acc_col] == True]
-            elif filter_option == "❌ Red Edilenler":
+            elif filter_option == get_text("filter_rejected"):
                 display_df = df[df[acc_col] == False]
             else:
                 display_df = df
@@ -556,7 +782,7 @@ def main():
             
             # Export
             st.divider()
-            st.subheader("📥 Sonuçları İndir")
+            st.subheader(get_text("download_title"))
             
             # Create Excel file in memory
             output = io.BytesIO()
@@ -567,7 +793,7 @@ def main():
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
             st.download_button(
-                label="📥 Excel Olarak İndir",
+                label=get_text("download_button"),
                 data=output,
                 file_name=f"screening_results_{timestamp}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
